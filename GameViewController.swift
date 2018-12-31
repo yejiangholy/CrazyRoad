@@ -32,7 +32,10 @@ class GameViewController: UIViewController {
     
     func setupFloor(){
         let floor = SCNFloor()
-        floor.firstMaterial?.diffuse.contents = UIColor.green
+        floor.firstMaterial?.diffuse.contents = UIImage(named: "art.scnassets/darkgrass.png")
+        floor.firstMaterial?.diffuse.wrapS = .repeat
+        floor.firstMaterial?.diffuse.wrapT = .repeat
+        floor.firstMaterial?.diffuse.contentsTransform = SCNMatrix4MakeScale(12.5, 12.5, 12.5)
         floor.reflectivity = 0.0
         
         let floorNode = SCNNode(geometry: floor)
