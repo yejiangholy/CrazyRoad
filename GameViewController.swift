@@ -23,6 +23,8 @@ class GameViewController: UIViewController {
     var jumpForwardAction:SCNAction?
     var jumpRightAction:SCNAction?
     var jumpLeftAction:SCNAction?
+    var driveRightAction:SCNAction?
+    var driveLeftAction:SCNAction?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -89,7 +91,7 @@ class GameViewController: UIViewController {
         directionalNode.light?.castsShadow = true
         directionalNode.light?.shadowColor = UIColor(red: 0.4, green: 0.4, blue: 0.4, alpha: 1)
         directionalNode.position = SCNVector3(x: -5, y: 5, z: 0)
-        directionalNode.eulerAngles = SCNVector3(x: 0, y: toRadians(angle: 90), z: -toRadians(angle: 45))
+        directionalNode.eulerAngles = SCNVector3(x: 0, y: -toRadians(angle: 90), z: -toRadians(angle: 45))
         lightNode.addChildNode(ambientNode)
         lightNode.addChildNode(directionalNode)
         lightNode.position = cameraNode.position
@@ -130,6 +132,8 @@ class GameViewController: UIViewController {
         jumpForwardAction = SCNAction.group([turnForwardAction, jumpAction, moveForwardAction])
         jumpRightAction = SCNAction.group([turnRightAction, jumpAction, moveRightAction])
         jumpLeftAction = SCNAction.group([turnLeftAction, jumpAction, moveLeftAction])
+        
+        
     }
     
     func jumpForward(){
