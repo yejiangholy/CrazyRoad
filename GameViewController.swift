@@ -35,6 +35,7 @@ class GameViewController: UIViewController {
         setupLight()
         setupGestures()
         setupActions()
+        setupTraffic()
     }
     
     func setupScene(){
@@ -133,7 +134,16 @@ class GameViewController: UIViewController {
         jumpRightAction = SCNAction.group([turnRightAction, jumpAction, moveRightAction])
         jumpLeftAction = SCNAction.group([turnLeftAction, jumpAction, moveLeftAction])
         
-        
+        driveRightAction = SCNAction.repeatForever(SCNAction.moveBy(x: 2.0, y: 0, z: 0, duration: 1.0))
+        driveLeftAction = SCNAction.repeatForever(SCNAction.moveBy(x: -2.0, y: 0, z: 0, duration: 1.0))
+    }
+    
+    func setupTraffic(){
+        for lane in lanes {
+            if let trafficNode = lane.trafficNode{
+                addActions(for: trafficNode)
+            }
+        }
     }
     
     func jumpForward(){
@@ -150,6 +160,21 @@ class GameViewController: UIViewController {
         cameraNode.position.z += diffZ
         
         lightNode.position = cameraNode.position
+    }
+    
+    func updateTraffic(){
+        for lane in lanes {
+            guard let trafficNode = lane.trafficNode else{
+                continue
+            }
+            for vehicle in trafficNode.childNodes{
+                if vehicle.position.x > 10 {
+                    vehicle.position.x = -10
+                }else if vehicle.position.x < -10{
+                    vehicle.position.x = 10
+                }
+            }
+        }
     }
     
     func addLanes(){
@@ -175,12 +200,27 @@ class GameViewController: UIViewController {
         laneCount += 1
         lanes.append(lane)
         mapNode.addChildNode(lane)
+        
+        if let trafficNode = lane.trafficNode {
+            addActions(for: trafficNode)
+        }
+    }
+    
+    
+    func addActions(for trafficNode: TrafficNode) {
+        guard let driveAction = trafficNode.directionRight ? driveRightAction : driveLeftAction else{return}
+        
+        driveAction.speed = 1/CGFloat(trafficNode.type + 1) + 0.5
+        for vehicle in trafficNode.childNodes{
+            vehicle.runAction(driveAction)
+        }
     }
 }
 
 extension GameViewController: SCNSceneRendererDelegate {
     func renderer(_ renderer: SCNSceneRenderer, didApplyAnimationsAtTime time: TimeInterval) {
         updatePositions()
+        updateTraffic()
     }
 }
 
