@@ -10,26 +10,39 @@ import UIKit
 import QuartzCore
 import SceneKit
 
+enum GameState{
+    case menu, playing, gameOver
+}
+
 class GameViewController: UIViewController {
 
     var scene: SCNScene!
     var sceneView: SCNView!
+    var gameHUD:GameHUD!
+    
     var cameraNode = SCNNode()
     var lightNode = SCNNode()
     var playerNode = SCNNode()
+    var collisionNode = CollsionNode()
     var mapNode = SCNNode()
     var lanes = [LaneNode]()
     var laneCount = 0
+    
     var jumpForwardAction:SCNAction?
     var jumpRightAction:SCNAction?
     var jumpLeftAction:SCNAction?
     var driveRightAction:SCNAction?
     var driveLeftAction:SCNAction?
     
+    var frontBlocked = false
+    var rightBlocked = false
+    var leftBlocked = false
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupScene()
         setupPlayer()
+        setupCollisionNode()
         setupFloor()
         setupCamera()
         setupLight()
@@ -42,6 +55,7 @@ class GameViewController: UIViewController {
         sceneView = view as? SCNView
         sceneView.delegate = self
         scene = SCNScene()
+        scene.physicsWorld.contactDelegate = self
         sceneView.scene = scene
         scene.rootNode.addChildNode(mapNode)
         
@@ -57,9 +71,15 @@ class GameViewController: UIViewController {
             playerNode.position = SCNVector3(x: 0, y: 0.3, z: 0)
             scene.rootNode.addChildNode(playerNode)
         }
-        
+    }
+    
+    func setupCollisionNode(){
+        collisionNode.position = playerNode.position
+        scene.rootNode.addChildNode(collisionNode)
         
     }
+    
+    
     
     func setupFloor(){
         let floor = SCNFloor()
@@ -149,11 +169,14 @@ class GameViewController: UIViewController {
     func jumpForward(){
         if let action = jumpForwardAction{
             addLanes()
-            playerNode.runAction(action)
+            playerNode.runAction(action, completionHandler:{
+                self.checkBlocks()
+            })
         }
     }
     
     func updatePositions(){
+        collisionNode.position = playerNode.position
         let diffX = playerNode.position.x + 1 - cameraNode.position.x
         let diffZ = playerNode.position.y + 2 - cameraNode.position.z
         cameraNode.position.x += diffX
@@ -224,27 +247,65 @@ extension GameViewController: SCNSceneRendererDelegate {
     }
 }
 
+extension GameViewController:SCNPhysicsContactDelegate{
+    func physicsWorld(_ world: SCNPhysicsWorld, didBegin contact: SCNPhysicsContact) {
+        guard let categoryA = contact.nodeA.physicsBody?.categoryBitMask, let categoryB = contact.nodeB.physicsBody?.categoryBitMask else {return}
+        
+        let mask = categoryA | categoryB
+        
+        switch mask {
+        case PhysicsCategory.chicken | PhysicsCategory.vehicle:
+            print("Game Over")
+        case PhysicsCategory.vegetation | PhysicsCategory.collisionTestFront:
+            frontBlocked = true
+        case PhysicsCategory.vegetation | PhysicsCategory.collisionTestRight:
+            rightBlocked = true
+        case PhysicsCategory.vegetation | PhysicsCategory.collisionTestLeft:
+            leftBlocked = true
+        default:
+            break
+        }
+    }
+}
+
 
 extension GameViewController {
     
     @objc func handleSwipe(_ sender: UISwipeGestureRecognizer){
         switch sender.direction {
         case UISwipeGestureRecognizer.Direction.up:
-            jumpForward()
+            if !frontBlocked{jumpForward()}
+            
         case UISwipeGestureRecognizer.Direction.right:
-            if playerNode.position.x < 10{
+            if playerNode.position.x < 10 && !rightBlocked{
                 if let action = jumpRightAction{
-                    playerNode.runAction(action)
+                    playerNode.runAction(action, completionHandler:{
+                        self.checkBlocks()
+                    })
                 }
             }
         case UISwipeGestureRecognizer.Direction.left:
-            if playerNode.position.x > -10{
+            if playerNode.position.x > -10 && !leftBlocked{
                 if let action =  jumpLeftAction {
-                    playerNode.runAction(action)
+                    playerNode.runAction(action, completionHandler:{
+                        self.checkBlocks()
+                    })
                 }
             }
         default:
             break
+        }
+    }
+    
+    func checkBlocks(){
+        if scene.physicsWorld.contactTest(with: collisionNode.front.physicsBody!, options: nil).isEmpty{
+            frontBlocked = false
+        }
+        if scene.physicsWorld.contactTest(with: collisionNode.right.physicsBody!, options: nil).isEmpty{
+            rightBlocked = false
+        }
+        if scene.physicsWorld.contactTest(with: collisionNode.left.physicsBody!, options: nil).isEmpty{
+            leftBlocked = false
         }
     }
     
