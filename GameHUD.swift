@@ -24,8 +24,8 @@ class GameHUD: SKScene {
     }
     
     func addMenuLables(){
-        logoLabel = SKLabelNode(fontNamed: "BBIT WONDER Nominal")
-        tapToPlayLable = SKLabelNode(fontNamed: "BBIT WONDER Nominal")
+        logoLabel = SKLabelNode(fontNamed: "8BIT WONDER Nominal")
+        tapToPlayLable = SKLabelNode(fontNamed: "8BIT WONDER Nominal")
         guard let logoLable = logoLabel, let tapToPlayLable = tapToPlayLable else {return}
         logoLable.text = "Crazy Road"
         logoLable.fontSize = 35.0
@@ -39,7 +39,7 @@ class GameHUD: SKScene {
     }
     
     func addPointsLable(){
-        pointsLable = SKLabelNode(fontNamed: "BBIT WONDER Nominal")
+        pointsLable = SKLabelNode(fontNamed: "8BIT WONDER Nominal")
         guard let pointsLable = pointsLable else{return}
         pointsLable.text = "0"
         pointsLable.fontSize = 40.0
