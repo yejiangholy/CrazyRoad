@@ -65,7 +65,9 @@ class LaneNode: SCNNode {
             if type == .grass{
                 if randomBool(odds: 7){
                     let vegetation = getVegetation()
-                    vegetation.position = SCNVector3(x: 10-Float(index), y: 0, z: 0)
+                    let p = SCNVector3(x: 10-Float(index), y: 0, z: 0)
+                    if (p.x == 0 && p.y == 0.3 && p.z == 0) {continue}
+                    vegetation.position = p
                     laneNode.addChildNode(vegetation)
                 }
             }else if type == .road {
