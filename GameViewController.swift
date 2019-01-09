@@ -64,7 +64,6 @@ class GameViewController: UIViewController {
         scene.rootNode.enumerateChildNodes { (node, _) in
             node.removeFromParentNode()
         }
-        scene = nil
         gameState = .menu
         score = 0
         laneCount = 0
@@ -165,11 +164,11 @@ class GameViewController: UIViewController {
         sceneView.addGestureRecognizer(swipeUp)
         
         let swipeRight = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipe))
-        swipeUp.direction = .right
+        swipeRight.direction = .right
         sceneView.addGestureRecognizer(swipeRight)
         
         let swipeLeft = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipe))
-        swipeUp.direction = .left
+        swipeLeft.direction = .left
         sceneView.addGestureRecognizer(swipeLeft)
         
     }
@@ -179,8 +178,8 @@ class GameViewController: UIViewController {
         let moveDownAction = SCNAction.moveBy(x: 0, y: -1.0, z: 0, duration: 0.1)
         moveUpAction.timingMode = .easeOut
         moveDownAction.timingMode = .easeIn
-        
         let jumpAction = SCNAction.sequence([moveUpAction,moveDownAction])
+        
         let moveForwardAction = SCNAction.moveBy(x: 0, y: 0, z: -1.0, duration: 0.2)
         let moveRightAction = SCNAction.moveBy(x: 1.0, y: 0, z: 0, duration: 0.2)
         let moveLeftAction = SCNAction.moveBy(x: -1.0, y: 0, z: 0, duration: 0.2)
@@ -188,7 +187,6 @@ class GameViewController: UIViewController {
         let turnForwardAction = SCNAction.rotateTo(x: 0, y: toRadians(angle: 180), z: 0, duration: 0.2, usesShortestUnitArc: true)
         let turnRightAction = SCNAction.rotateTo(x: 0, y: toRadians(angle: 90), z: 0, duration: 0.2, usesShortestUnitArc: true)
         let turnLeftAction = SCNAction.rotateTo(x: 0, y: toRadians(angle: -90), z: 0, duration: 0.2, usesShortestUnitArc: true)
-        
         
         jumpForwardAction = SCNAction.group([turnForwardAction, jumpAction, moveForwardAction])
         jumpRightAction = SCNAction.group([turnRightAction, jumpAction, moveRightAction])
@@ -222,7 +220,7 @@ class GameViewController: UIViewController {
     func updatePositions(){
         collisionNode.position = playerNode.position
         let diffX = playerNode.position.x + 1 - cameraNode.position.x
-        let diffZ = playerNode.position.y + 2 - cameraNode.position.z
+        let diffZ = playerNode.position.z + 2 - cameraNode.position.z
         cameraNode.position.x += diffX
         cameraNode.position.z += diffZ
         
