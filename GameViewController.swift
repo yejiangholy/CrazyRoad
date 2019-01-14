@@ -22,7 +22,8 @@ class GameViewController: UIViewController {
     var gameHUD:GameHUD!
     var gameState = GameState.menu
     var score = 0
-    
+    var highestScore:Int?
+    let defaults = UserDefaults.standard
     var cameraNode = SCNNode()
     var lightNode = SCNNode()
     var playerNode = SCNNode()
@@ -51,7 +52,7 @@ class GameViewController: UIViewController {
         switch gameState {
         case .menu:
             setupGestures()
-            gameHUD = GameHUD(with: sceneView.bounds.size, menu: false)
+            gameHUD = GameHUD(with: sceneView.bounds.size, menu: false,record: highestScore!)
             sceneView.overlaySKScene = gameHUD
             sceneView.overlaySKScene?.isUserInteractionEnabled = false
             gameState = .playing
@@ -81,6 +82,7 @@ class GameViewController: UIViewController {
         setupLight()
         setupActions()
         setupTraffic()
+        setupHighestScore()
     }
     
     func setupScene(){
@@ -90,7 +92,7 @@ class GameViewController: UIViewController {
         scene.physicsWorld.contactDelegate = self
         sceneView.present(scene, with: .fade(withDuration: 1), incomingPointOfView: nil, completionHandler: nil)
         DispatchQueue.main.async{
-            self.gameHUD = GameHUD(with: self.sceneView.bounds.size, menu: true)
+            self.gameHUD = GameHUD(with: self.sceneView.bounds.size, menu: true, record: self.highestScore!)
             self.sceneView.overlaySKScene = self.gameHUD
             self.sceneView.overlaySKScene?.isUserInteractionEnabled = false
         }
@@ -198,6 +200,14 @@ class GameViewController: UIViewController {
         dieAction = SCNAction.moveBy(x: 0, y: 5, z: 0, duration: 1.0)
     }
     
+    func setupHighestScore(){
+        if UserDefaults.standard.object(forKey: "highestScore") != nil{
+            self.highestScore = UserDefaults.standard.integer(forKey: "highestScore")
+        }else{
+            self.highestScore = 0
+        }
+    }
+    
     func setupTraffic(){
         for lane in lanes {
             if let trafficNode = lane.trafficNode{
@@ -213,8 +223,17 @@ class GameViewController: UIViewController {
                 self.checkBlocks()
                 self.score += 1
                 self.gameHUD.pointsLable?.text = "\(self.score)"
+                if self.score > self.highestScore!{
+                    if self.highestScore != 0 {self.congratsForNewRecord()}
+                    self.highestScore = self.score
+                    self.defaults.set(self.highestScore, forKey: "highestScore")
+                }
             })
         }
+    }
+    
+    func congratsForNewRecord(){
+        
     }
     
     func updatePositions(){

@@ -13,13 +13,16 @@ class GameHUD: SKScene {
     var logoLabel: SKLabelNode?
     var tapToPlayLable: SKLabelNode?
     var pointsLable: SKLabelNode?
+    var highestPointsLable: SKLabelNode? // display highestPoints
+    var highestPoints:Int?
     
-    init(with size: CGSize, menu: Bool){
+    init(with size: CGSize, menu: Bool, record:Int){
         super.init(size: size)
         if menu{
             addMenuLables()
         }else{
             addPointsLable()
+            addHighestPointsLable(record: record)
         }
     }
     
@@ -45,6 +48,15 @@ class GameHUD: SKScene {
         pointsLable.fontSize = 40.0
         pointsLable.position = CGPoint(x: frame.minX + pointsLable.frame.size.width, y: frame.maxY - pointsLable.frame.size.height*2)
         addChild(pointsLable)
+    }
+    
+    func addHighestPointsLable(record: Int){
+         highestPointsLable = SKLabelNode(fontNamed: "8BIT WONDER Nominal")
+         guard let highestPointsLable = highestPointsLable else{return}
+        highestPointsLable.text = String(record)
+        highestPointsLable.fontSize = 40.0
+        highestPointsLable.position = CGPoint(x: frame.minX + highestPointsLable.frame.size.width, y: frame.maxY-pointsLable!.frame.size.height*2 - highestPointsLable.frame.size.height*2)
+        addChild(highestPointsLable)
     }
     
     
