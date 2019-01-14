@@ -35,6 +35,7 @@ class GameViewController: UIViewController {
     var jumpForwardAction:SCNAction?
     var jumpRightAction:SCNAction?
     var jumpLeftAction:SCNAction?
+    var jumpBackAction:SCNAction?
     var driveRightAction:SCNAction?
     var driveLeftAction:SCNAction?
     var dieAction:SCNAction?
@@ -42,6 +43,7 @@ class GameViewController: UIViewController {
     var frontBlocked = false
     var rightBlocked = false
     var leftBlocked = false
+    var backBlocked = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -173,6 +175,9 @@ class GameViewController: UIViewController {
         swipeLeft.direction = .left
         sceneView.addGestureRecognizer(swipeLeft)
         
+        let swipeBack = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipe))
+        swipeBack.direction = .down
+        sceneView.addGestureRecognizer(swipeBack)
     }
     
     func setupActions(){
@@ -183,16 +188,19 @@ class GameViewController: UIViewController {
         let jumpAction = SCNAction.sequence([moveUpAction,moveDownAction])
         
         let moveForwardAction = SCNAction.moveBy(x: 0, y: 0, z: -1.0, duration: 0.2)
+        let moveBackAction = SCNAction.moveBy(x: 0, y: 0, z: 1, duration: 0.2)
         let moveRightAction = SCNAction.moveBy(x: 1.0, y: 0, z: 0, duration: 0.2)
         let moveLeftAction = SCNAction.moveBy(x: -1.0, y: 0, z: 0, duration: 0.2)
         
         let turnForwardAction = SCNAction.rotateTo(x: 0, y: toRadians(angle: 180), z: 0, duration: 0.2, usesShortestUnitArc: true)
+        let turnBackAction = SCNAction.rotateTo(x: 0, y: toRadians(angle: 360), z: 0, duration: 0.2, usesShortestUnitArc: true)
         let turnRightAction = SCNAction.rotateTo(x: 0, y: toRadians(angle: 90), z: 0, duration: 0.2, usesShortestUnitArc: true)
         let turnLeftAction = SCNAction.rotateTo(x: 0, y: toRadians(angle: -90), z: 0, duration: 0.2, usesShortestUnitArc: true)
         
         jumpForwardAction = SCNAction.group([turnForwardAction, jumpAction, moveForwardAction])
         jumpRightAction = SCNAction.group([turnRightAction, jumpAction, moveRightAction])
         jumpLeftAction = SCNAction.group([turnLeftAction, jumpAction, moveLeftAction])
+        jumpBackAction = SCNAction.group([turnBackAction, jumpAction, moveBackAction])
         
         driveRightAction = SCNAction.repeatForever(SCNAction.moveBy(x: 2.0, y: 0, z: 0, duration: 1.0))
         driveLeftAction = SCNAction.repeatForever(SCNAction.moveBy(x: -2.0, y: 0, z: 0, duration: 1.0))
@@ -228,6 +236,16 @@ class GameViewController: UIViewController {
                     self.highestScore = self.score
                     self.defaults.set(self.highestScore, forKey: "highestScore")
                 }
+            })
+        }
+    }
+    
+    func jumpBackward(){
+        if let action = jumpBackAction{
+            playerNode.runAction(action, completionHandler:{
+                self.checkBlocks()
+                self.score -= 1
+                self.gameHUD.pointsLable?.text = "\(self.score)"
             })
         }
     }
@@ -340,6 +358,8 @@ extension GameViewController:SCNPhysicsContactDelegate{
             rightBlocked = true
         case PhysicsCategory.vegetation | PhysicsCategory.collisionTestLeft:
             leftBlocked = true
+        case PhysicsCategory.vegetation | PhysicsCategory.collisionTestBack:
+            backBlocked = true
         default:
             break
         }
@@ -370,6 +390,11 @@ extension GameViewController {
                     })
                 }
             }
+        case UISwipeGestureRecognizer.Direction.down:
+            if  playerNode.position.z <= -1 && !backBlocked{
+                jumpBackward()
+                self.checkBlocks()
+            }
         default:
             break
         }
@@ -384,6 +409,9 @@ extension GameViewController {
         }
         if scene.physicsWorld.contactTest(with: collisionNode.left.physicsBody!, options: nil).isEmpty{
             leftBlocked = false
+        }
+        if scene.physicsWorld.contactTest(with: collisionNode.back.physicsBody!, options: nil).isEmpty{
+            backBlocked = false
         }
     }
     

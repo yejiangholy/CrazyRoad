@@ -16,6 +16,7 @@ struct PhysicsCategory{
     static let collisionTestFront = 8
     static let collisionTestRight = 16
     static let collisionTestLeft = 32
+    static let collisionTestBack = 64
 }
 
 

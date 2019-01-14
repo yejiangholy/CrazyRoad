@@ -21,8 +21,8 @@ class GameHUD: SKScene {
         if menu{
             addMenuLables()
         }else{
-            addPointsLable()
             addHighestPointsLable(record: record)
+            addPointsLable()
         }
     }
     
@@ -46,7 +46,7 @@ class GameHUD: SKScene {
         guard let pointsLable = pointsLable else{return}
         pointsLable.text = "0"
         pointsLable.fontSize = 40.0
-        pointsLable.position = CGPoint(x: frame.minX + pointsLable.frame.size.width, y: frame.maxY - pointsLable.frame.size.height*2)
+        pointsLable.position = CGPoint(x: frame.minX + pointsLable.frame.size.width, y: frame.maxY - pointsLable.frame.size.height*2 - highestPointsLable!.frame.size.height*2)
         addChild(pointsLable)
     }
     
@@ -55,7 +55,7 @@ class GameHUD: SKScene {
          guard let highestPointsLable = highestPointsLable else{return}
         highestPointsLable.text = String(record)
         highestPointsLable.fontSize = 40.0
-        highestPointsLable.position = CGPoint(x: frame.minX + highestPointsLable.frame.size.width, y: frame.maxY-pointsLable!.frame.size.height*2 - highestPointsLable.frame.size.height*2)
+        highestPointsLable.position = CGPoint(x: frame.minX + highestPointsLable.frame.size.width, y: frame.maxY - highestPointsLable.frame.size.height*2)
         addChild(highestPointsLable)
     }
     
